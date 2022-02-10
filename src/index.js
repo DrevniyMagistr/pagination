@@ -9,6 +9,11 @@ const nextPageRef = document.querySelector('.next-page');
 const prevPageRef = document.querySelector('.prev-page');
 const currentPageRef = document.querySelector('.current-page');
 
+const handlePageChange = currentPage => {
+  getPopularMovies(currentPage).then(({ data }) => {
+    renderMovieList(data.results);
+  });
+};
 const moviePagination = new Pagination({
   total: 100,
   onChange(value) {
@@ -30,11 +35,6 @@ const renderMovieList = movies => {
   moviesListRef.innerHTML = moviesListTemplate(moviesList);
 };
 
-const handlePageChange = currentPage => {
-  getPopularMovies(currentPage).then(({ data }) => {
-    renderMovieList(data.results);
-  });
-};
 
 nextPageRef.addEventListener('click', () => {
   moviePagination.nextPage();
