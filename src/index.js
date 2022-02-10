@@ -1,16 +1,51 @@
-import { createHeroesList } from './js/heroesList';
-import { getHeroesList } from './js/api/dotaApi';
-
 import './css/styles.css';
+import { getPopularMovies } from './js/api/movieApi';
+import { generateImgPath } from './js/utils';
+import moviesListTemplate from './js/components/moviesList.hbs';
+import { Pagination } from './js/pagination';
 
-const renderHeroes = template => {
-  const heroesListRef = document.querySelector('.hero-list');
-  heroesListRef.innerHTML = template;
+const moviesListRef = document.querySelector('.movies-wrapper');
+const nextPageRef = document.querySelector('.next-page');
+const prevPageRef = document.querySelector('.prev-page');
+const currentPageRef = document.querySelector('.current-page');
+
+const moviePagination = new Pagination({
+  total: 100,
+  onChange(value) {
+    handlePageChange(value);
+    currentPageRef.textContent = value;
+  },
+});
+
+const renderMovieList = movies => {
+  const moviesList = movies.map(movie => {
+    const { original_title, poster_path } = movie;
+
+    return {
+      original_title,
+      poster: generateImgPath(poster_path),
+    };
+  });
+
+  moviesListRef.innerHTML = moviesListTemplate(moviesList);
 };
 
-getHeroesList()
-  .then(heroes => {
-    const heroesTemplate = createHeroesList(heroes);
-    renderHeroes(heroesTemplate);
-  })
-  .catch(error => console.log(error));
+const handlePageChange = currentPage => {
+  getPopularMovies(currentPage).then(({ data }) => {
+    renderMovieList(data.results);
+  });
+};
+
+nextPageRef.addEventListener('click', () => {
+  moviePagination.nextPage();
+});
+
+prevPageRef.addEventListener('click', () => {
+  moviePagination.prevPage();
+});
+
+getPopularMovies().then(({ data }) => {
+  const { results: movies } = data;
+
+  renderMovieList(movies);
+});
